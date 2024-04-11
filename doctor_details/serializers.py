@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer
-from .models import Doctor
+from .models import Doctor, Forecast
 from patient_details.models import Patient
 
 class Ddetails_serializers(ModelSerializer):
@@ -20,4 +20,9 @@ class result_serializers(ModelSerializer):
     class Meta:
         model = Doctor
         fields = ['name']
+
+class ForecastSerializer(ModelSerializer):
+    class Meta :
+        model = Forecast
+        fields = "__all__"
 

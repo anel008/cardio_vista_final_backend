@@ -1,7 +1,7 @@
 from rest_framework import status, viewsets,filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
-from .serializers import Ddetails_serializers,result_serializers
+from .serializers import Ddetails_serializers,ForecastSerializer
 from .models import Doctor
 from django.contrib.auth.models import User
 from rest_framework.generics import GenericAPIView,RetrieveUpdateAPIView,DestroyAPIView
@@ -31,34 +31,17 @@ class d_create(GenericAPIView):
         # Proceed only if the user is authenticated
         if user.is_authenticated:
             data = request.data
-            serializer = self.get_serializer(data=data)
+            data["user_id"] = request.user.id
+            print("*************data+++++++++++++++++++", type(data))
+            serializer = Ddetails_serializers(data=data)
             if serializer.is_valid():
-                validated_data = serializer.validated_data
-                try:
-                    # Creating a new instance of Doctor_profile
-                    details = Doctor.objects.create(
-                        doctor_name=validated_data['doctor_name'],
-                        license_no=validated_data['license_no'],
-                        specialty=validated_data['specialty'],
-                        email=validated_data['email'],
-                        phone_number=validated_data['phone_number'],
-                        bio=validated_data.get('bio', '')  # Use get() to avoid KeyError if bio is not provided
-                    )
-                    # Serializing the created instance and returning the response
-                    response_serializer = Ddetails_serializers(details)
-                    return Response(response_serializer.data, status=status.HTTP_201_CREATED)
-                except Exception as e:
-                    # Catch any other exception and return an internal server error
-                    return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                serializer.save()
+                return Response({"date": serializer.data}, status=status.HTTP_201_CREATED)
             else:
-                # Return validation errors if the data is not valid
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
-            # Return an error if the user is not authenticated
             return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
         
-
-
 
 # ********** fetching all the enterd details in doctor ************* #
         
@@ -196,7 +179,7 @@ class Forecast(APIView):
         return filepath
         
 
-    def post(self, request):
+    def post(self, request, patientID):
             user = request.user
             if user.is_authenticated:
                 audio_data = request.FILES["audio"]
@@ -217,18 +200,24 @@ class Forecast(APIView):
                 preds = model.predict(input_feature_data)
                 aggregate_class_index = round(np.mean(preds))
                 forecast = label_encoder.inverse_transform([aggregate_class_index])[0]
-                heart_beat = self.get_heart_beat(samples, sr)
-                sc_file_path = self.spectral_centroid(samples, sr, request.POST['patient_id'])
+                heart_beat = self.get_heart_beat(samples, sr) - 33
+                sc_file_path = self.spectral_centroid(samples, sr, patientID)
 
                 data_to_db = {
                     'forecast' : forecast, 
                     'heart_beat' : heart_beat, 
-                    'patient' : request.POST['patient_id'], 
-                    'doctor' : request.user.id ,
-                    'path' : sc_file_path
+                    'patient' : patientID, 
+                    'doctor' : Doctor.objects.get(user_id = request.user.id).id ,
+                    'graph' : sc_file_path
                             }
+                
+                serializer = ForecastSerializer(data=data_to_db)
+                if serializer.is_valid():
+                    serializer.save()
 
-                return Response(data_to_db, status=status.HTTP_201_CREATED)
+                    return Response(data_to_db, status=status.HTTP_201_CREATED)
+                else :
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             else :
                 return Response({"error" : "user not authenticated "}, status=status.HTTP_403_FORBIDDEN)
     

@@ -11,15 +11,15 @@ class Doctor(models.Model):
     phone_number = models.CharField(max_length=20, default = 0)
     bio = models.TextField(blank=True)
     #username = models.ForeignKey(User,on_delete= models.CASCADE,related_name="doctor_details",null=True)
-    user_id=models.ForeignKey(User,on_delete=models.CASCADE,null=True)
+    user_id=models.ForeignKey(User,on_delete=models.CASCADE)
 
 class Forecast(models.Model):
     CHOICES = (
-        ("H", "Healthy"),
-        ("U", "Un-Healthy")
+        ("healthy", "h"),
+        ("un_healthy", "u")
     )
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     heart_beat = models.IntegerField()
-    forecast = models.CharField(max_length=1,choices=CHOICES)
-    graph = models.ImageField(upload_to='spectral_centroid/')
+    forecast = models.CharField(max_length=10,choices=CHOICES)
+    graph = models.CharField(max_length=100)
