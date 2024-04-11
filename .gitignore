@@ -1,0 +1,10 @@
+_venv
+db.sqlite3
+patient_details/__pycache__
+patient_details/migrations
+media/spectral_centroid
+doctor_details/__pycache__
+doctor_details/migrations
+cardio/__pycache__
+accounts/__pycache__
+accounts/migrations
