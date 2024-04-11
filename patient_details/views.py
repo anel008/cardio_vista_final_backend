@@ -24,7 +24,7 @@ class p_names(APIView):
 
     def get(self,request, *args, **kwargs):
         id=request.user.id
-        qs=Patient_details.objects.filter(user_id=id)
+        qs=Patient.objects.filter(user_id=id)
         serializers=patient_name_list_serializers(qs,many=True)
         return Response(data=serializers.data)
 
@@ -42,7 +42,7 @@ class p_details(APIView):
 
     def get(self,request, *args, **kwargs):
         id=request.user.id
-        qs=Patient_details.objects.filter(user_id=id)
+        qs=Patient.objects.filter(user_id=id)
         serializers=pdetails_serializers(qs,many=True)
         return Response(data=serializers.data)
 
@@ -74,7 +74,7 @@ class p_create(GenericAPIView):
             validated_data = serializer.validated_data
             
             # Creating a new instance of Patient_details
-            details = Patient_details.objects.create(
+            details = Patient.objects.create(
                 name=validated_data['name'],
                 dob=validated_data['dob'],
                 phone_number=validated_data['phone_number'],
@@ -109,7 +109,7 @@ class Update_Patient(RetrieveUpdateAPIView):
 
     def get_object(self):
         name = self.kwargs.get('name')
-        return Patient_details.objects.get(name= name)
+        return Patient.objects.get(name= name)
 
     def patch(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -129,7 +129,7 @@ class Delete_patient(DestroyAPIView):
 
     def get_object(self):
         name = self.kwargs.get('name') 
-        return Patient_details.objects.get(name=name)  # Retrieve the patient based on the name
+        return Patient.objects.get(name=name)  # Retrieve the patient based on the name
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()

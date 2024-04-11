@@ -43,7 +43,7 @@ class d_create(GenericAPIView):
                 validated_data = serializer.validated_data
                 try:
                     # Creating a new instance of Doctor_profile
-                    details = Doctor_profile.objects.create(
+                    details = Doctor.objects.create(
                         doctor_name=validated_data['doctor_name'],
                         license_no=validated_data['license_no'],
                         specialty=validated_data['specialty'],
@@ -77,7 +77,7 @@ class d_details(APIView):
 
     def get(self,request, *args, **kwargs):
         id=request.user.id
-        qs=Doctor_profile.objects.filter(user_id=id)
+        qs=Doctor.objects.filter(user_id=id)
         serializers=Ddetails_serializers(qs,many=True)
         return Response(data=serializers.data)
 
@@ -91,7 +91,7 @@ class Update_Doctor(RetrieveUpdateAPIView):
 
     def get_object(self):
         doctor_name = self.kwargs.get('doctor_name')  # Get the license_no from URL kwargs
-        return Doctor_profile.objects.get(doctor_name=doctor_name)  # Retrieve the doctor based on the license_no
+        return Doctor.objects.get(doctor_name=doctor_name)  # Retrieve the doctor based on the license_no
 
     def patch(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -112,7 +112,7 @@ class Delete_Doctor(DestroyAPIView):
 
     def get_object(self):
         doctor_name = self.kwargs.get('doctor_name')
-        return Doctor_profile.objects.get(doctor_name = doctor_name)
+        return Doctor.objects.get(doctor_name = doctor_name)
     
     def delete (self, request, *args, **kwargs):
         instance = self.get_object()
