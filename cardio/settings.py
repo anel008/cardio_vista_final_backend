@@ -151,7 +151,9 @@ REST_FRAMEWORK = {
 
 
 CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:8000',  # Example: Allow requests from your Flutter app running locally
+    'http://127.0.0.1:8000',
+    # 'http://localhost:33239/', 
+    # 'http://0.0.0.0:5000/'  # Example: Allow requests from your Flutter app running locally
     # Add more origins as needed
 ]
 

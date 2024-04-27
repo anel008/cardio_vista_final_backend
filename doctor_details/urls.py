@@ -13,6 +13,7 @@ urlpatterns = [
     path('Dupdate/<str:doctor_name>',Update_Doctor.as_view()),   #update doctor
     path('Ddelete/<str:doctor_name>',Delete_Doctor.as_view()),   #Delete doctor
     path("forecast/<int:patientID>", Forecast.as_view()),   # model training - give audio file <= 2 mb as input
+    path("forecast/", Forecast.as_view()),   # model training - give audio file <= 2 mb as input
     # path('result',result.as_view()),
     
 

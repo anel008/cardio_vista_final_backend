@@ -6,10 +6,9 @@ from rest_framework import serializers
 
 
 class pdetails_serializers(ModelSerializer):
-    # other = serializers.CharField(max_length=50, allow_blank=True)
     class Meta:
         model = Patient
-        fields = ['name','dob','phone_number','age','weight','height','sex','hyper_tension_bp','chest_pain','palpitation','surgery','other','user_id']
+        fields = "__all__"
 
 class recording_serializers(ModelSerializer):
 

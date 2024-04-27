@@ -60,36 +60,16 @@ class p_create(GenericAPIView):
     def post(self, request):
         # Ensure the authenticated user is retrieved properly
         user = request.user
-
         # Proceed only if the user is authenticated
         if user.is_authenticated:
-            data = request.data
-            serializer = self.get_serializer(data=data)
-            serializer.is_valid(raise_exception=True)
-            
-            # Extracting data from the serializer
-            validated_data = serializer.validated_data
-            
-            # Creating a new instance of Patient_details
-            details = Patient.objects.create(
-                name=validated_data['name'],
-                dob=validated_data['dob'],
-                phone_number=validated_data['phone_number'],
-                age=validated_data['age'],
-                weight=validated_data['weight'],
-                height=validated_data['height'],
-                sex=validated_data['sex'],
-                hyper_tension_bp=validated_data['hyper_tension_bp'],
-                chest_pain=validated_data['chest_pain'], 
-                palpitation=validated_data['palpitation'],
-                surgery=validated_data['surgery'],
-                other=validated_data['other'],
-                user_id=user  # Assign the authenticated user directly
-            )   
-
-            # Serializing the created instance and returning the response
-            response_serializer = self.get_serializer(details)
-            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+            data = request.data.copy()
+            data["user_id"] = request.user.id
+            serializer = pdetails_serializers(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -166,3 +146,4 @@ class recordings(APIView):
             serializer.save()  # This will save the uploaded file, and Django takes care of the directory
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+

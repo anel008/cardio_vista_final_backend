@@ -2,7 +2,8 @@ from rest_framework import status, viewsets,filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from .serializers import Ddetails_serializers,ForecastSerializer
-from .models import Doctor
+from .models import Doctor, Patient
+from .models import Forecast as Fs
 from django.contrib.auth.models import User
 from rest_framework.generics import GenericAPIView,RetrieveUpdateAPIView,DestroyAPIView
 from django_filters import rest_framework as filter
@@ -32,7 +33,6 @@ class d_create(GenericAPIView):
         if user.is_authenticated:
             data = request.data
             data["user_id"] = request.user.id
-            print("*************data+++++++++++++++++++", type(data))
             serializer = Ddetails_serializers(data=data)
             if serializer.is_valid():
                 serializer.save()
@@ -114,10 +114,6 @@ class Search_Doctors(viewsets.ModelViewSet):
     ordering_fields = "__all__"
 
 
-
-
-
-
 # ************** Model prediction ***************** #
 
 
@@ -160,7 +156,7 @@ class Forecast(APIView):
     
     def spectral_centroid(self, y, sr, patient_id):
 
-        filepath = f"media/spectral_centroid/{patient_id}_{time.time()}.jpeg"
+        filepath = f"media/spectral_centroid/{patient_id}_{int(time.time())}.jpeg"
 
         spectral_centroids = librosa.feature.spectral_centroid(y=y, sr=sr)[0]
 
@@ -178,7 +174,6 @@ class Forecast(APIView):
 
         return filepath
         
-
     def post(self, request, patientID):
             user = request.user
             if user.is_authenticated:
@@ -208,16 +203,30 @@ class Forecast(APIView):
                     'heart_beat' : heart_beat, 
                     'patient' : patientID, 
                     'doctor' : Doctor.objects.get(user_id = request.user.id).id ,
-                    'graph' : sc_file_path
+                    'graph' : sc_file_path,
+                    'timestamp' : int(time.time())
                             }
                 
                 serializer = ForecastSerializer(data=data_to_db)
                 if serializer.is_valid():
                     serializer.save()
 
-                    return Response(data_to_db, status=status.HTTP_201_CREATED)
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
                 else :
                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             else :
                 return Response({"error" : "user not authenticated "}, status=status.HTTP_403_FORBIDDEN)
     
+    def get(self, request, patientID = 0) :
+        user = (request.user)
+        if user.is_authenticated :
+            if Patient.objects.filter(user_id = user.id).exists():# call by patient
+                data = (Fs.objects.filter(patient = Patient.objects.get(user_id = user.id).id)).order_by('-timestamp')
+                serializer = ForecastSerializer(data,many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else: # call by doctor 
+                data = (Fs.objects.filter(patient = patientID)).order_by('-timestamp')
+                serializer = ForecastSerializer(data,many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "Authentication failed" }, status=status.HTTP_403_FORBIDDEN)

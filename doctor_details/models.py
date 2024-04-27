@@ -23,3 +23,4 @@ class Forecast(models.Model):
     heart_beat = models.IntegerField()
     forecast = models.CharField(max_length=10,choices=CHOICES)
     graph = models.CharField(max_length=100)
+    timestamp = models.BigIntegerField()

@@ -26,4 +26,4 @@ class Patient(models.Model):
     surgery = models.BooleanField(default=False)  # Default added
     other = models.TextField(max_length=50, default='')  # Default added
 
-    user_id=models.ForeignKey(User,on_delete=models.CASCADE,null=True)
+    user_id=models.ForeignKey(User,on_delete=models.CASCADE)
